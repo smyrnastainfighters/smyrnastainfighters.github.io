@@ -123,7 +123,7 @@ function renderNeighborhood(container, onBookGroup) {
           <button
             type="button"
             id="book-group-btn"
-            class="w-full sm:w-auto py-3.5 px-6 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/25 transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+            class="w-full sm:w-auto py-3.5 px-6 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/25 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
           >
             <span>Book Neighborhood Clean</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>

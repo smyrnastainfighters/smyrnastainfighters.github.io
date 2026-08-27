@@ -78,11 +78,11 @@ export function initBeforeAfter() {
     btn.addEventListener('click', () => {
       const type = btn.getAttribute('data-stain-type');
       stainButtons.forEach(b => {
-        b.classList.remove('bg-emerald-500', 'text-slate-950', 'font-bold');
+        b.classList.remove('bg-emerald-400', 'bg-emerald-500', 'text-slate-950', 'font-bold');
         b.classList.add('bg-slate-800/80', 'text-slate-300');
       });
       btn.classList.remove('bg-slate-800/80', 'text-slate-300');
-      btn.classList.add('bg-emerald-500', 'text-slate-950', 'font-bold');
+      btn.classList.add('bg-emerald-400', 'text-slate-950', 'font-bold');
 
       if (stainThemes[type] && stainDescription && beforeConcrete) {
         stainDescription.textContent = stainThemes[type].desc;

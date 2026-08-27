@@ -9,7 +9,7 @@ import { initServiceArea } from './js/serviceArea.js';
 import { initChecklist } from './js/checklist.js';
 import { openBookingModal, closeBookingModal, openPrintModal, closePrintModal } from './js/modals.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
   // 1. Mobile Menu Drawer Toggle
   const menuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu-drawer');
@@ -74,7 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   initChecklist();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 function renderFaqSection() {
   const faqMount = document.getElementById('faq-accordion-container') || document.getElementById('faq-mount');
