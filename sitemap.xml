@@ -1,8 +1,11 @@
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
- <url>
-  <loc>https://smyrnastainfighters.github.io</loc>
-  <xhtml:link href="https://smyrnastainfighters.github.io" hreflang="x-default" rel="alternate"/>
-  <loc>https://smyrnastainfighters.github.io/game</loc>
-  <xhtml:link href="https://smyrnastainfighters.github.io/game" hreflang="ar" rel="alternate"/>
- </url>
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://smyrnastainfighters.github.io/</loc>
+    <priority>1.00</priority>
+  </url>
+  <url>
+    <loc>https://smyrnastainfighters.github.io/game</loc>
+    <priority>0.80</priority>
+  </url>
 </urlset>
