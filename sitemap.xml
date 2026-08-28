@@ -2,6 +2,7 @@
  <url>
   <loc>https://smyrnastainfighters.github.io</loc>
   <xhtml:link href="https://smyrnastainfighters.github.io" hreflang="x-default" rel="alternate"/>
-  <xhtml:link href="smyrnastainfighters.github.io/game" hreflang="ar" rel="alternate"/>
+  <loc>https://smyrnastainfighters.github.io/game</loc>
+  <xhtml:link href="https://smyrnastainfighters.github.io/game" hreflang="ar" rel="alternate"/>
  </url>
 </urlset>
