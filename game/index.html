@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smyrna Stain Fighters - Deep Clean Defender</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandNavy: '#0F172A',
+                        brandBlue: '#0284C7',
+                        brandCyan: '#38BDF8',
+                        brandTeal: '#0D9488',
+                        brandGreen: '#10B981',
+                        brandFoam: '#E0F2FE'
+                    },
+                    fontFamily: {
+                        display: ['Outfit', 'sans-serif'],
+                        body: ['Plus Jakarta Sans', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0B132B;
+            user-select: none;
+            touch-action: none;
+        }
+        .font-display { font-family: 'Outfit', sans-serif; }
+        
+        /* Custom game canvas styles */
+        #canvas-container {
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(56, 189, 248, 0.2);
+            border-radius: 1rem;
+            overflow: hidden;
+            background: #1e293b;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        /* Tool cursor effects */
+        .cursor-steam { cursor: crosshair; }
+        .cursor-scrub { cursor: grab; }
+        .cursor-scrub:active { cursor: grabbing; }
+
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0F172A; }
+        ::-webkit-scrollbar-thumb { background: #0284C7; border-radius: 4px; }
+
+        /* Glowing animation */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(56, 189, 248, 0.8); }
+        }
+        .glow-active { animation: pulse-glow 2s infinite; }
+
+        /* Foam particle animation overlay */
+        .shine-sparkle {
+            pointer-events: none;
+            position: absolute;
+            animation: shineAnim 0.8s ease-out forwards;
+        }
+        @keyframes shineAnim {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.2) rotate(90deg); opacity: 0.9; }
+            100% { transform: scale(0) rotate(180deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- Header Navbar -->
+    <header class="bg-slate-900/90 border-b border-slate-800 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white text-2xl shadow-lg shadow-cyan-500/30">
+                    <i class="fa-solid font-bold fa-spray-can-sparkles"></i>
+                </div>
+                <div>
+                    <h1 class="font-display font-black text-xl md:text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-200 to-cyan-400">
+                        SMYRNA <span class="text-cyan-400">STAIN FIGHTERS</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium">Deep Clean Defender &bull; Smyrna, GA</p>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="flex items-center gap-3 md:gap-6 bg-slate-950/70 border border-slate-800 rounded-2xl px-4 py-2">
+                <div class="text-center">
+                    <span class="block text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Cleanliness</span>
+                    <span id="clean-percent" class="text-lg md:text-xl font-display font-black text-emerald-400">0%</span>
+                </div>
+                <div class="h-8 w-px bg-slate-800"></div>
+                <div class="text-center">
+                    <span class="block text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Satisfaction</span>
+                    <div class="flex items-center text-amber-400 text-xs md:text-sm font-bold gap-1">
+                        <i class="fa-solid fa-star"></i>
+                        <span id="score-text">100%</span>
+                    </div>
+                </div>
+                <div class="h-8 w-px bg-slate-800"></div>
+                <div class="text-center">
+                    <span class="block text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Earnings</span>
+                    <span id="money-display" class="text-lg md:text-xl font-display font-black text-cyan-400">$0</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2">
+                <button id="btn-sound" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition border border-slate-700" title="Toggle Sound">
+                    <i class="fa-solid fa-volume-high text-sm"></i>
+                </button>
+                <button id="btn-shop" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20 transition flex items-center gap-2">
+                    <i class="fa-solid fa-store"></i>
+                    <span class="hidden sm:inline">Equipment Shop</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto w-full px-4 py-4 flex-1 flex flex-col justify-center">
+        <!-- Level Banner & Mission Briefing -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span id="level-badge" class="px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-xs font-bold uppercase tracking-wider">Level 1</span>
+                    <h2 id="level-title" class="text-lg font-display font-bold text-white">Smyrna Living Room Carpet Rescue</h2>
+                </div>
+                <p id="level-desc" class="text-xs sm:text-sm text-slate-400 mt-1">
+                    "Help! We spilled red wine and coffee during the tailgate! Clear 90%+ of all stains!"
+                </p>
+            </div>
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <button id="btn-restart" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition border border-slate-700 flex-1 sm:flex-none flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-rotate-left"></i> Reset Job
+                </button>
+                <button id="btn-next-level" class="hidden px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 transition flex-1 sm:flex-none items-center justify-center gap-2">
+                    <span>Next Client</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Workspace Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 items-start">
+            
+            <!-- Left Tool Palette (Desktop) -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 lg:col-span-1 order-2 lg:order-1 flex flex-col gap-3">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-2">
+                    <i class="fa-solid fa-toolbox text-cyan-400"></i> Pro Cleaning Arsenal
+                </h3>
+                
+                <div id="tools-list" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-1 gap-2.5">
+                    <!-- Tool 1: Steam Wand Extractor -->
+                    <button data-tool="steam" class="tool-btn active p-3 rounded-xl bg-cyan-600 text-white border-2 border-cyan-300 shadow-md flex items-center gap-3 transition text-left">
+                        <div class="w-10 h-10 rounded-lg bg-slate-950/30 flex items-center justify-center text-lg shrink-0">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="font-bold text-sm truncate">Steam Extractor</div>
+                            <div class="text-[11px] opacity-80 truncate">Liquid Stains & Soda</div>
+                        </div>
+                    </button>
+
+                    <!-- Tool 2: Rotary Scrub Brush -->
+                    <button data-tool="scrub" class="tool-btn p-3 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-750 border border-slate-700 flex items-center gap-3 transition text-left">
+                        <div class="w-10 h-10 rounded-lg bg-slate-950/30 flex items-center justify-center text-lg shrink-0 text-amber-400">
+                            <i class="fa-solid fa-compact-disc"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="font-bold text-sm truncate">Rotary Scrubber</div>
+                            <div class="text-[11px] text-slate-400 truncate">Grime & Dried Mud</div>
+                        </div>
+                    </button>
+
+                    <!-- Tool 3: Citrus Enzyme Spotter -->
+                    <button data-tool="spotter" class="tool-btn p-3 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-750 border border-slate-700 flex items-center gap-3 transition text-left">
+                        <div class="w-10 h-10 rounded-lg bg-slate-950/30 flex items-center justify-center text-lg shrink-0 text-emerald-400">
+                            <i class="fa-solid fa-bottle-droplet"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="font-bold text-sm truncate">Enzyme Spotter</div>
+                            <div class="text-[11px] text-slate-400 truncate">Organic & Pet Stains</div>
+                        </div>
+                    </button>
+
+                    <!-- Tool 4: High-PSI Pressure Washer -->
+                    <button data-tool="pressure" class="tool-btn p-3 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-750 border border-slate-700 flex items-center gap-3 transition text-left">
+                        <div class="w-10 h-10 rounded-lg bg-slate-950/30 flex items-center justify-center text-lg shrink-0 text-blue-400">
+                            <i class="fa-solid fa-shower"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="font-bold text-sm truncate">Hydro-Jet Wash</div>
+                            <div class="text-[11px] text-slate-400 truncate">Outdoor & Heavy Dirt</div>
+                        </div>
+                    </button>
+
+                    <!-- Tool 5: UV Spot Detection Light -->
+                    <button data-tool="uv" class="tool-btn p-3 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-750 border border-slate-700 flex items-center gap-3 transition text-left">
+                        <div class="w-10 h-10 rounded-lg bg-slate-950/30 flex items-center justify-center text-lg shrink-0 text-purple-400">
+                            <i class="fa-solid fa-lightbulb"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="font-bold text-sm truncate">UV Stain Detector</div>
+                            <div class="text-[11px] text-slate-400 truncate">Reveals Hidden Spots</div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Active Tool Specs -->
+                <div class="mt-2 bg-slate-950/50 rounded-xl p-3 border border-slate-800 text-xs">
+                    <div class="flex justify-between text-slate-400 mb-1">
+                        <span>Cleaning Radius:</span>
+                        <span id="stat-radius" class="font-bold text-cyan-300">45 px</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400 mb-1">
+                        <span>Extraction Power:</span>
+                        <span id="stat-power" class="font-bold text-cyan-300">High</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5 mt-2 overflow-hidden">
+                        <div id="stat-power-bar" class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-1.5 rounded-full" style="width: 70%"></div>
+                    </div>
+                </div>
+
+                <!-- Call Smyrna Stain Fighters Hotline Promo -->
+                <div class="mt-auto pt-3 border-t border-slate-800/80 text-center">
+                    <p class="text-[11px] text-slate-400">Real stain emergency in Smyrna?</p>
+                    <a href="https://smyrna-stain-fighters.ai.studio/" target="_blank" class="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center justify-center gap-1 mt-1">
+                        <span>Book Pro Service</span> <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Game Canvas Play Field -->
+            <div class="lg:col-span-3 order-1 lg:order-2 flex flex-col items-center">
+                <div id="canvas-container" class="w-full aspect-[4/3] max-h-[560px] cursor-steam relative border-4 border-slate-800">
+                    <!-- Clean Base Layer Canvas -->
+                    <canvas id="cleanCanvas" class="pointer-events-none"></canvas>
+                    <!-- Dirt/Stain Overlay Canvas -->
+                    <canvas id="dirtCanvas"></canvas>
+                    <!-- FX Particles Overlay Canvas -->
+                    <canvas id="fxCanvas" class="pointer-events-none"></canvas>
+
+                    <!-- UV Blacklight Flash overlay effect -->
+                    <div id="uv-overlay" class="pointer-events-none absolute inset-0 bg-indigo-950/40 mix-blend-color-dodge opacity-0 transition-opacity duration-300"></div>
+
+                    <!-- Cleanliness Progress Float Badge -->
+                    <div class="absolute top-4 right-4 bg-slate-900/90 border border-slate-700 backdrop-blur-md rounded-xl px-3 py-1.5 flex items-center gap-2 shadow-lg">
+                        <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                        <span class="text-xs font-bold text-slate-200">Target: <span id="target-percent-text">90%</span> Clean</span>
+                    </div>
+
+                    <!-- Interactive Drag Hint -->
+                    <div id="drag-hint" class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center bg-slate-950/40 backdrop-blur-[2px] transition-opacity duration-500">
+                        <div class="w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 flex items-center justify-center text-2xl animate-bounce mb-3">
+                            <i class="fa-solid fa-hand-pointer"></i>
+                        </div>
+                        <span class="px-4 py-2 rounded-full bg-slate-900/90 border border-slate-700 text-sm font-bold text-white shadow-xl">
+                            Drag or Hold Mouse/Touch to Scrub Stains!
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Clean Bar Progress Track -->
+                <div class="w-full mt-3 bg-slate-900 border border-slate-800 rounded-xl p-2.5 flex items-center gap-3">
+                    <span class="text-xs font-bold text-slate-400 shrink-0">ROOM CLEANED:</span>
+                    <div class="flex-1 bg-slate-950 rounded-full h-3 overflow-hidden border border-slate-800 p-0.5">
+                        <div id="clean-progress-bar" class="bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <span id="clean-bar-text" class="text-xs font-black text-cyan-400 shrink-0">0%</span>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Shop / Upgrade Modal -->
+    <div id="modal-shop" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl relative">
+            <button id="close-shop" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <div>
+                    <h3 class="font-display text-xl font-bold text-white">Smyrna Pro Van Equipment Shop</h3>
+                    <p class="text-xs text-slate-400">Upgrade your gear to clean tough Atlanta & Smyrna stains faster!</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+                <!-- Upgrade 1 -->
+                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-white">Extra Wide Nozzle</div>
+                            <div class="text-xs text-slate-400">Increases cleaning radius by +25%</div>
+                            <div class="text-[11px] text-cyan-400 mt-0.5">Current Radius: <span id="shop-radius-val">45px</span></div>
+                        </div>
+                    </div>
+                    <button id="buy-radius" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-md transition shrink-0">
+                        Upgrade ($150)
+                    </button>
+                </div>
+
+                <!-- Upgrade 2 -->
+                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-gauge-high"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-white">Turbo Heated Steam Boiler</div>
+                            <div class="text-xs text-slate-400">Scrubs stubborn stains 40% faster</div>
+                            <div class="text-[11px] text-emerald-400 mt-0.5">Current Power Level: <span id="shop-power-val">1.0x</span></div>
+                        </div>
+                    </div>
+                    <button id="buy-power" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-md transition shrink-0">
+                        Upgrade ($200)
+                    </button>
+                </div>
+
+                <!-- Upgrade 3 -->
+                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-lemon"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-white">Smyrna Citrus Deodorizer</div>
+                            <div class="text-xs text-slate-400">+25% bonus tip cash from happy customers!</div>
+                            <div class="text-[11px] text-amber-400 mt-0.5">Status: <span id="shop-citrus-val">Not Purchased</span></div>
+                        </div>
+                    </div>
+                    <button id="buy-citrus" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-md transition shrink-0">
+                        Buy Formula ($300)
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-800 flex justify-between items-center">
+                <span class="text-sm text-slate-400">Available Cash: <strong id="shop-money" class="text-cyan-400">$0</strong></span>
+                <button id="btn-close-shop-bottom" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level Victory Overlay Modal -->
+    <div id="modal-victory" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-12 -left-12 w-32 h-32 bg-cyan-500/20 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl"></div>
+            
+            <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-400 text-slate-950 flex items-center justify-center text-4xl mx-auto mb-4 shadow-xl shadow-emerald-500/30">
+                <i class="fa-solid fa-award"></i>
+            </div>
+
+            <h3 class="font-display text-2xl font-black text-white">CLEANING JOB COMPLETE!</h3>
+            <p class="text-xs text-slate-400 mt-1">Smyrna Stain Fighters solved another customer crisis!</p>
+
+            <!-- Star rating -->
+            <div class="flex justify-center gap-2 my-4 text-2xl text-amber-400">
+                <i id="star-1" class="fa-solid fa-star"></i>
+                <i id="star-2" class="fa-solid fa-star"></i>
+                <i id="star-3" class="fa-solid fa-star"></i>
+            </div>
+
+            <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 my-4 space-y-2 text-xs">
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Cleanliness Rating:</span>
+                    <span id="vic-clean" class="font-bold text-emerald-400">98%</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Base Service Fee:</span>
+                    <span id="vic-base-pay" class="font-bold text-white">$150</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Customer Tip:</span>
+                    <span id="vic-tip" class="font-bold text-cyan-400">$45</span>
+                </div>
+                <div class="h-px bg-slate-800 my-1"></div>
+                <div class="flex justify-between text-sm font-bold">
+                    <span class="text-slate-200">Total Profit:</span>
+                    <span id="vic-total" class="text-emerald-400 font-display font-black text-base">$195</span>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button id="vic-replay" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition">
+                    Replay Level
+                </button>
+                <button id="vic-next" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/30 transition">
+                    Next Location
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-3 px-4 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <span>&copy; Smyrna Stain Fighters &bull; Carpet, Upholstery & Deep Cleaning Experts</span>
+            <div class="flex items-center gap-4 text-slate-400">
+                <a href="https://smyrna-stain-fighters.ai.studio/" target="_blank" class="hover:text-cyan-400 transition">Visit Official Website</a>
+                <span>&bull;</span>
+                <span class="text-cyan-400 font-semibold"><i class="fa-solid fa-phone text-[10px] mr-1"></i> Smyrna, GA Pro Service</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Audio Synthesizer for realistic cleaning sound effects
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioCtx();
+                }
+            }
+
+            playSteam(duration = 0.1) {
+                if (!this.enabled) return;
+                this.init();
+                try {
+                    const bufferSize = this.ctx.sampleRate * duration;
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    const noise = this.ctx.createBufferSource();
+                    noise.buffer = buffer;
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.value = 1800;
+                    filter.Q.value = 2;
+
+                    const gain = this.ctx.createGain();
+                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    noise.start();
+                } catch(e) {}
+            }
+
+            playScrub() {
+                if (!this.enabled) return;
+                this.init();
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(120 + Math.random() * 60, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.08);
+                } catch(e) {}
+            }
+
+            playChime() {
+                if (!this.enabled) return;
+                this.init();
+                try {
+                    const now = this.ctx.currentTime;
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        gain.gain.setValueAtTime(0.1, now + idx * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.4);
+
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now + idx * 0.08);
+                        osc.stop(now + idx * 0.08 + 0.4);
+                    });
+                } catch(e) {}
+            }
+        }
+
+        const sfx = new SoundFX();
+
+        const LEVELS = [
+            {
+                id: 1,
+                title: "Smyrna Living Room Carpet Rescue",
+                badge: "Level 1",
+                desc: "Spilled Coffee & Wine on plush beige carpet before guests arrive!",
+                target: 90,
+                basePay: 150,
+                bgType: "carpet",
+                bgColor: "#D4C4A8", // Beige carpet pattern
+                stains: [
+                    { x: 0.3, y: 0.4, r: 80, color: "rgba(90, 20, 30, 0.95)", type: "wine" }, // Red wine
+                    { x: 0.65, y: 0.35, r: 95, color: "rgba(60, 35, 20, 0.95)", type: "coffee" }, // Coffee
+                    { x: 0.5, y: 0.7, r: 70, color: "rgba(120, 70, 20, 0.9)", type: "mud" },
+                    { x: 0.2, y: 0.75, r: 50, color: "rgba(80, 40, 15, 0.85)", type: "coffee" }
+                ]
+            },
+            {
+                id: 2,
+                title: "Battery Park Kitchen Tile & Grout Scrub",
+                badge: "Level 2",
+                desc: "Grease splatters and muddy paw prints on Italian Porcelain kitchen tiles!",
+                target: 92,
+                basePay: 210,
+                bgType: "tile",
+                bgColor: "#E2E8F0",
+                stains: [
+                    { x: 0.25, y: 0.3, r: 100, color: "rgba(40, 40, 30, 0.95)", type: "grease" },
+                    { x: 0.7, y: 0.6, r: 110, color: "rgba(95, 60, 30, 0.9)", type: "mud" },
+                    { x: 0.45, y: 0.45, r: 85, color: "rgba(180, 80, 20, 0.85)", type: "sauce" },
+                    { x: 0.8, y: 0.25, r: 60, color: "rgba(50, 40, 30, 0.9)", type: "grease" },
+                    { x: 0.2, y: 0.75, r: 75, color: "rgba(100, 30, 30, 0.9)", type: "wine" }
+                ]
+            },
+            {
+                id: 3,
+                title: "Vinings Luxury Velvet Couch Restoration",
+                badge: "Level 3",
+                desc: "Pet accidents & chocolate ice cream melt on fine micro-velvet sofa!",
+                target: 94,
+                basePay: 280,
+                bgType: "couch",
+                bgColor: "#334155", // Deep slate blue sofa fabric
+                stains: [
+                    { x: 0.35, y: 0.35, r: 110, color: "rgba(45, 25, 15, 0.95)", type: "chocolate" },
+                    { x: 0.65, y: 0.55, r: 90, color: "rgba(190, 160, 30, 0.95)", type: "pet" }, // Organic pet stain
+                    { x: 0.2, y: 0.65, r: 70, color: "rgba(80, 20, 20, 0.9)", type: "wine" },
+                    { x: 0.75, y: 0.3, r: 80, color: "rgba(50, 35, 20, 0.85)", type: "coffee" }
+                ]
+            },
+            {
+                id: 4,
+                title: "Smyrna Outdoor Patio & Driveway Power Wash",
+                badge: "Level 4 - Boss",
+                desc: "Heavy oil drips, mildew, and red Georgia clay buildup on concrete!",
+                target: 95,
+                basePay: 360,
+                bgType: "patio",
+                bgColor: "#94A3B8",
+                stains: [
+                    { x: 0.5, y: 0.5, r: 140, color: "rgba(160, 45, 20, 0.98)", type: "clay" }, // GA Red Clay
+                    { x: 0.25, y: 0.3, r: 100, color: "rgba(20, 20, 20, 0.95)", type: "oil" }, // Motor Oil
+                    { x: 0.75, y: 0.7, r: 120, color: "rgba(30, 60, 30, 0.9)", type: "mildew" },
+                    { x: 0.8, y: 0.25, r: 80, color: "rgba(150, 50, 20, 0.9)", type: "clay" },
+                    { x: 0.2, y: 0.7, r: 90, color: "rgba(30, 30, 30, 0.92)", type: "oil" }
+                ]
+            }
+        ];
+
+        let currentLevelIdx = 0;
+        let activeTool = 'steam'; // 'steam', 'scrub', 'spotter', 'pressure', 'uv'
+        let playerMoney = 0;
+        let currentCleanPercent = 0;
+        let isMouseDown = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        // Upgrade Modifiers
+        let radiusBonus = 0;
+        let powerMultiplier = 1.0;
+        let hasCitrusBonus = false;
+
+        // Canvas Elements
+        const container = document.getElementById('canvas-container');
+        const cleanCanvas = document.getElementById('cleanCanvas');
+        const dirtCanvas = document.getElementById('dirtCanvas');
+        const fxCanvas = document.getElementById('fxCanvas');
+
+        const cleanCtx = cleanCanvas.getContext('2d');
+        const dirtCtx = dirtCanvas.getContext('2d');
+        const fxCtx = fxCanvas.getContext('2d');
+
+        // FX Particles Array
+        let particles = [];
+
+        function resizeCanvases() {
+            const rect = container.getBoundingClientRect();
+            const width = Math.floor(rect.width) || 800;
+            const height = Math.floor(rect.height) || 600;
+
+            if (width <= 0 || height <= 0) return;
+
+            [cleanCanvas, dirtCanvas, fxCanvas].forEach(canvas => {
+                canvas.width = width;
+                canvas.height = height;
+            });
+
+            // Re-render current level when canvas resizes
+            renderLevel();
+        }
+
+        function drawCleanBackground(level) {
+            const w = cleanCanvas.width;
+            const h = cleanCanvas.height;
+
+            cleanCtx.fillStyle = level.bgColor;
+            cleanCtx.fillRect(0, 0, w, h);
+
+            if (level.bgType === "carpet") {
+                // Subtle carpet weave texture lines
+                cleanCtx.strokeStyle = "rgba(0, 0, 0, 0.04)";
+                cleanCtx.lineWidth = 2;
+                for (let x = 0; x < w; x += 6) {
+                    cleanCtx.beginPath();
+                    cleanCtx.moveTo(x, 0);
+                    cleanCtx.lineTo(x, h);
+                    cleanCtx.stroke();
+                }
+                for (let y = 0; y < h; y += 6) {
+                    cleanCtx.beginPath();
+                    cleanCtx.moveTo(0, y);
+                    cleanCtx.lineTo(w, y);
+                    cleanCtx.stroke();
+                }
+            } else if (level.bgType === "tile") {
+                // Kitchen Tile Grout Grid
+                cleanCtx.strokeStyle = "#CBD5E1";
+                cleanCtx.lineWidth = 4;
+                const tileSize = 70;
+                for (let x = 0; x < w; x += tileSize) {
+                    cleanCtx.beginPath();
+                    cleanCtx.moveTo(x, 0);
+                    cleanCtx.lineTo(x, h);
+                    cleanCtx.stroke();
+                }
+                for (let y = 0; y < h; y += tileSize) {
+                    cleanCtx.beginPath();
+                    cleanCtx.moveTo(0, y);
+                    cleanCtx.lineTo(w, y);
+                    cleanCtx.stroke();
+                }
+            } else if (level.bgType === "couch") {
+                // Soft fabric diagonal cross-hatch
+                cleanCtx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+                cleanCtx.lineWidth = 3;
+                for (let i = -h; i < w; i += 16) {
+                    cleanCtx.beginPath();
+                    cleanCtx.moveTo(i, 0);
+                    cleanCtx.lineTo(i + h, h);
+                    cleanCtx.stroke();
+                }
+            } else if (level.bgType === "patio") {
+                // Concrete slab joints
+                cleanCtx.strokeStyle = "#475569";
+                cleanCtx.lineWidth = 5;
+                cleanCtx.beginPath();
+                cleanCtx.moveTo(w / 2, 0);
+                cleanCtx.lineTo(w / 2, h);
+                cleanCtx.moveTo(0, h / 2);
+                cleanCtx.lineTo(w, h / 2);
+                cleanCtx.stroke();
+            }
+        }
+
+        function drawDirtOverlay(level) {
+            const w = dirtCanvas.width;
+            const h = dirtCanvas.height;
+
+            // Clear dirt layer first
+            dirtCtx.clearRect(0, 0, w, h);
+
+            level.stains.forEach(stain => {
+                const cx = stain.x * w;
+                const cy = stain.y * h;
+                const radius = stain.r;
+
+                // Draw main stain splatters with radial gradient
+                const grad = dirtCtx.createRadialGradient(cx, cy, radius * 0.1, cx, cy, radius);
+                grad.addColorStop(0, stain.color);
+                grad.addColorStop(0.7, stain.color);
+                grad.addColorStop(1, "rgba(0,0,0,0)");
+
+                dirtCtx.fillStyle = grad;
+                dirtCtx.beginPath();
+                dirtCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+                dirtCtx.fill();
+
+                // Add random splatter droplets around main stain
+                dirtCtx.fillStyle = stain.color;
+                for (let i = 0; i < 12; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = radius * (0.6 + Math.random() * 0.6);
+                    const dropR = 4 + Math.random() * (radius * 0.15);
+                    dirtCtx.beginPath();
+                    dirtCtx.arc(cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist, dropR, 0, Math.PI * 2);
+                    dirtCtx.fill();
+                }
+            });
+        }
+
+        function renderLevel() {
+            const level = LEVELS[currentLevelIdx];
+
+            // Update Header Banner UI
+            document.getElementById('level-badge').innerText = level.badge;
+            document.getElementById('level-title').innerText = level.title;
+            document.getElementById('level-desc').innerText = `"${level.desc}"`;
+            document.getElementById('target-percent-text').innerText = `${level.target}%`;
+
+            drawCleanBackground(level);
+            drawDirtOverlay(level);
+            calculateCleanliness();
+        }
+
+        function scrubStainAt(x, y) {
+            let baseRadius = 35;
+            let eraseAlpha = 0.35 * powerMultiplier;
+
+            // Tool specifics
+            if (activeTool === 'steam') {
+                baseRadius = 45;
+                eraseAlpha = 0.45 * powerMultiplier;
+                spawnParticles(x, y, '#E0F2FE', 3); // White steam bubbles
+                sfx.playSteam(0.08);
+            } else if (activeTool === 'scrub') {
+                baseRadius = 55;
+                eraseAlpha = 0.6 * powerMultiplier;
+                spawnParticles(x, y, '#FDE047', 4); // Foam scrub particles
+                sfx.playScrub();
+            } else if (activeTool === 'spotter') {
+                baseRadius = 40;
+                eraseAlpha = 0.5 * powerMultiplier;
+                spawnParticles(x, y, '#34D399', 3); // Green citrus mist
+                sfx.playSteam(0.05);
+            } else if (activeTool === 'pressure') {
+                baseRadius = 30;
+                eraseAlpha = 0.8 * powerMultiplier;
+                spawnParticles(x, y, '#38BDF8', 5); // Water droplets
+                sfx.playSteam(0.12);
+            } else if (activeTool === 'uv') {
+                // UV light reveals hidden stains (flashes purple tint)
+                const uvOverlay = document.getElementById('uv-overlay');
+                uvOverlay.style.opacity = '1';
+                setTimeout(() => uvOverlay.style.opacity = '0', 300);
+                return;
+            }
+
+            const radius = baseRadius + radiusBonus;
+
+            // Apply 'destination-out' to clear the dirt canvas pixels, revealing clean canvas underneath
+            dirtCtx.save();
+            dirtCtx.globalCompositeOperation = 'destination-out';
+
+            const grad = dirtCtx.createRadialGradient(x, y, 0, x, y, radius);
+            grad.addColorStop(0, `rgba(0, 0, 0, ${eraseAlpha})`);
+            grad.addColorStop(0.7, `rgba(0, 0, 0, ${eraseAlpha * 0.7})`);
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            dirtCtx.fillStyle = grad;
+            dirtCtx.beginPath();
+            dirtCtx.arc(x, y, radius, 0, Math.PI * 2);
+            dirtCtx.fill();
+            dirtCtx.restore();
+
+            // Hide drag hint on first action
+            document.getElementById('drag-hint').style.opacity = '0';
+
+            // Calculate progress periodically
+            calculateCleanliness();
+        }
+
+        function calculateCleanliness() {
+            const w = dirtCanvas.width;
+            const h = dirtCanvas.height;
+
+            // Guard against unmeasured or 0-dimension canvas
+            if (w <= 0 || h <= 0) return;
+
+            // Sample pixels on dirt canvas to compute cleanliness
+            const sampleStep = 12; // Grid sample step for performance
+            const imgData = dirtCtx.getImageData(0, 0, w, h).data;
+
+            let totalSampled = 0;
+            let dirtySampled = 0;
+
+            for (let y = 0; y < h; y += sampleStep) {
+                for (let x = 0; x < w; x += sampleStep) {
+                    const idx = (y * w + x) * 4;
+                    const alpha = imgData[idx + 3];
+                    totalSampled++;
+                    if (alpha > 30) {
+                        dirtySampled++;
+                    }
+                }
+            }
+
+            const dirtyRatio = dirtySampled / totalSampled;
+            currentCleanPercent = Math.min(100, Math.max(0, Math.round((1 - dirtyRatio) * 100)));
+
+            // Update UI Counters
+            document.getElementById('clean-percent').innerText = `${currentCleanPercent}%`;
+            document.getElementById('clean-bar-text').innerText = `${currentCleanPercent}%`;
+            document.getElementById('clean-progress-bar').style.width = `${currentCleanPercent}%`;
+
+            // Check Level Victory
+            const currentLevel = LEVELS[currentLevelIdx];
+            if (currentCleanPercent >= currentLevel.target) {
+                document.getElementById('btn-next-level').classList.remove('hidden');
+                document.getElementById('btn-next-level').classList.add('flex');
+            }
+        }
+
+        function spawnParticles(x, y, color, count) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 4,
+                    radius: 3 + Math.random() * 5,
+                    alpha: 1,
+                    color: color,
+                    life: 25 + Math.random() * 15
+                });
+            }
+        }
+
+        function updateParticles() {
+            fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 1;
+                p.alpha = Math.max(0, p.life / 40);
+
+                fxCtx.fillStyle = p.color;
+                fxCtx.globalAlpha = p.alpha;
+                fxCtx.beginPath();
+                fxCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                fxCtx.fill();
+
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(updateParticles);
+        }
+
+        function getCanvasCoords(e) {
+            const rect = dirtCanvas.getBoundingClientRect();
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function startScrubbing(e) {
+            isMouseDown = true;
+            const coords = getCanvasCoords(e);
+            lastX = coords.x;
+            lastY = coords.y;
+            scrubStainAt(coords.x, coords.y);
+        }
+
+        function moveScrubbing(e) {
+            if (!isMouseDown) return;
+            const coords = getCanvasCoords(e);
+            
+            // Interpolate line points so scrubbing is smooth even during quick movements
+            const dx = coords.x - lastX;
+            const dy = coords.y - lastY;
+            const dist = Math.hypot(dx, dy);
+            const steps = Math.max(1, Math.floor(dist / 10));
+
+            for (let i = 0; i < steps; i++) {
+                const interpX = lastX + (dx / steps) * i;
+                const interpY = lastY + (dy / steps) * i;
+                scrubStainAt(interpX, interpY);
+            }
+
+            lastX = coords.x;
+            lastY = coords.y;
+        }
+
+        function stopScrubbing() {
+            isMouseDown = false;
+        }
+
+        const toolButtons = document.querySelectorAll('.tool-btn');
+        toolButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                toolButtons.forEach(b => {
+                    b.classList.remove('active', 'bg-cyan-600', 'text-white', 'border-2', 'border-cyan-300');
+                    b.classList.add('bg-slate-800', 'text-slate-300', 'border', 'border-slate-700');
+                });
+
+                btn.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+                btn.classList.add('active', 'bg-cyan-600', 'text-white', 'border-2', 'border-cyan-300');
+
+                activeTool = btn.dataset.tool;
+                updateToolStatsDisplay();
+            });
+        });
+
+        function updateToolStatsDisplay() {
+            const radiusDisplay = document.getElementById('stat-radius');
+            const powerDisplay = document.getElementById('stat-power');
+            const powerBar = document.getElementById('stat-power-bar');
+
+            const totalRadius = 35 + radiusBonus + (activeTool === 'scrub' ? 20 : activeTool === 'steam' ? 10 : 0);
+            radiusDisplay.innerText = `${totalRadius} px`;
+
+            if (activeTool === 'pressure') {
+                powerDisplay.innerText = "Ultra High";
+                powerBar.style.width = "95%";
+            } else if (activeTool === 'scrub') {
+                powerDisplay.innerText = "High Agitation";
+                powerBar.style.width = "85%";
+            } else if (activeTool === 'steam') {
+                powerDisplay.innerText = "Balanced Steam";
+                powerBar.style.width = "75%";
+            } else {
+                powerDisplay.innerText = "Precision Spotter";
+                powerBar.style.width = "60%";
+            }
+        }
+
+        function triggerVictoryModal() {
+            const level = LEVELS[currentLevelIdx];
+            sfx.playChime();
+
+            // Calculate Rewards
+            let tip = Math.round(level.basePay * (currentCleanPercent / 100) * 0.3);
+            if (hasCitrusBonus) tip = Math.round(tip * 1.25);
+
+            const totalEarnings = level.basePay + tip;
+            playerMoney += totalEarnings;
+
+            document.getElementById('money-display').innerText = `$${playerMoney}`;
+            document.getElementById('shop-money').innerText = `$${playerMoney}`;
+
+            // Set modal values
+            document.getElementById('vic-clean').innerText = `${currentCleanPercent}%`;
+            document.getElementById('vic-base-pay').innerText = `$${level.basePay}`;
+            document.getElementById('vic-tip').innerText = `$${tip}`;
+            document.getElementById('vic-total').innerText = `$${totalEarnings}`;
+
+            // Show modal
+            document.getElementById('modal-victory').classList.remove('hidden');
+        }
+
+        const shopModal = document.getElementById('modal-shop');
+        document.getElementById('btn-shop').addEventListener('click', () => shopModal.classList.remove('hidden'));
+        document.getElementById('close-shop').addEventListener('click', () => shopModal.classList.add('hidden'));
+        document.getElementById('btn-close-shop-bottom').addEventListener('click', () => shopModal.classList.add('hidden'));
+
+        // Buy Radius Upgrade
+        document.getElementById('buy-radius').addEventListener('click', () => {
+            if (playerMoney >= 150) {
+                playerMoney -= 150;
+                radiusBonus += 15;
+                document.getElementById('money-display').innerText = `$${playerMoney}`;
+                document.getElementById('shop-money').innerText = `$${playerMoney}`;
+                document.getElementById('shop-radius-val').innerText = `${45 + radiusBonus}px`;
+                updateToolStatsDisplay();
+                alertShopSuccess("Purchased Extra Wide Nozzle!");
+            } else {
+                alertShopSuccess("Not enough cash!");
+            }
+        });
+
+        // Buy Power Upgrade
+        document.getElementById('buy-power').addEventListener('click', () => {
+            if (playerMoney >= 200) {
+                playerMoney -= 200;
+                powerMultiplier += 0.4;
+                document.getElementById('money-display').innerText = `$${playerMoney}`;
+                document.getElementById('shop-money').innerText = `$${playerMoney}`;
+                document.getElementById('shop-power-val').innerText = `${powerMultiplier.toFixed(1)}x`;
+                updateToolStatsDisplay();
+                alertShopSuccess("Purchased Turbo Steam Boiler!");
+            } else {
+                alertShopSuccess("Not enough cash!");
+            }
+        });
+
+        // Buy Citrus Deodorizer Upgrade
+        document.getElementById('buy-citrus').addEventListener('click', () => {
+            if (playerMoney >= 300 && !hasCitrusBonus) {
+                playerMoney -= 300;
+                hasCitrusBonus = true;
+                document.getElementById('money-display').innerText = `$${playerMoney}`;
+                document.getElementById('shop-money').innerText = `$${playerMoney}`;
+                document.getElementById('shop-citrus-val').innerText = "Active (+25% Tips)";
+                document.getElementById('buy-citrus').disabled = true;
+                document.getElementById('buy-citrus').classList.add('opacity-50', 'cursor-not-allowed');
+                alertShopSuccess("Purchased Smyrna Citrus Formula!");
+            }
+        });
+
+        function alertShopSuccess(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-6 right-6 bg-cyan-500 text-slate-950 font-bold px-4 py-2.5 rounded-xl shadow-xl z-50 text-xs transition-all';
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        window.addEventListener('load', () => {
+            resizeCanvases();
+            updateParticles();
+
+            // Canvas Interaction Listeners
+            dirtCanvas.addEventListener('mousedown', startScrubbing);
+            dirtCanvas.addEventListener('mousemove', moveScrubbing);
+            window.addEventListener('mouseup', stopScrubbing);
+
+            dirtCanvas.addEventListener('touchstart', startScrubbing, { passive: true });
+            dirtCanvas.addEventListener('touchmove', moveScrubbing, { passive: true });
+            window.addEventListener('touchend', stopScrubbing);
+
+            // Resize Event
+            window.addEventListener('resize', resizeCanvases);
+
+            // Next Level Buttons
+            document.getElementById('btn-next-level').addEventListener('click', triggerVictoryModal);
+            document.getElementById('vic-next').addEventListener('click', () => {
+                document.getElementById('modal-victory').classList.add('hidden');
+                document.getElementById('btn-next-level').classList.add('hidden');
+                document.getElementById('btn-next-level').classList.remove('flex');
+                currentLevelIdx = (currentLevelIdx + 1) % LEVELS.length;
+                renderLevel();
+            });
+
+            document.getElementById('vic-replay').addEventListener('click', () => {
+                document.getElementById('modal-victory').classList.add('hidden');
+                renderLevel();
+            });
+
+            document.getElementById('btn-restart').addEventListener('click', () => {
+                renderLevel();
+            });
+
+            // Toggle Audio Button
+            document.getElementById('btn-sound').addEventListener('click', function() {
+                sfx.enabled = !sfx.enabled;
+                this.innerHTML = sfx.enabled ? '<i class="fa-solid fa-volume-high text-sm"></i>' : '<i class="fa-solid fa-volume-xmark text-sm text-red-400"></i>';
+            });
+        });
+    </script>
+</body>
+</html>
